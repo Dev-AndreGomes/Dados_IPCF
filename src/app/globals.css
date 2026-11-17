@@ -1,26 +1,162 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ipcf-deep: #12392a;
+  --ipcf-brand: #1b4d37;
+  --ipcf-gold: #cf9841;
+  --ipcf-gold-soft: #f1cd86;
+  --ipcf-leaf: #8ca454;
+  --ipcf-bg: #faf8f3;
+  --ipcf-surface: #ffffff;
+  --ipcf-border: #e2dfd5;
+  --ipcf-ink: #17231d;
+  --ipcf-muted: #5b6961;
+  --ipcf-danger: #b42318;
+  --ipcf-danger-bg: #fef3f2;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ipcf-deep: var(--ipcf-deep);
+  --color-ipcf-brand: var(--ipcf-brand);
+  --color-ipcf-gold: var(--ipcf-gold);
+  --color-ipcf-gold-soft: var(--ipcf-gold-soft);
+  --color-ipcf-leaf: var(--ipcf-leaf);
+  --color-ipcf-bg: var(--ipcf-bg);
+  --color-ipcf-surface: var(--ipcf-surface);
+  --color-ipcf-border: var(--ipcf-border);
+  --color-ipcf-ink: var(--ipcf-ink);
+  --color-ipcf-muted: var(--ipcf-muted);
+  --color-ipcf-danger: var(--ipcf-danger);
+  --color-ipcf-danger-bg: var(--ipcf-danger-bg);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--ipcf-bg);
+  color: var(--ipcf-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+/* Skip link acessível apenas ao foco via teclado */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--ipcf-deep);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  border-bottom-right-radius: 0.75rem;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+  outline: 3px solid var(--ipcf-gold);
+  outline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ipcf-brand);
+  outline-offset: 2px;
+}
+
+/* Validação progressiva após interação (:user-invalid evita erro enquanto usuário digita).
+   16px no mobile evita auto-zoom automático do Safari iOS ao tocar nos campos.
+   Envolvido em @layer components para permitir utilitários Tailwind (ex.: pl-10, pr-11). */
+@layer components {
+  .ipcf-input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--ipcf-border);
+    background-color: #ffffff;
+    padding: 0.65rem 0.9rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ipcf-ink);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  @media (min-width: 640px) {
+    .ipcf-input {
+      font-size: 0.95rem;
+    }
+  }
+
+  .ipcf-input::placeholder {
+    color: #8b9690;
+  }
+
+  .ipcf-input:focus {
+    outline: none;
+    border-color: var(--ipcf-brand);
+    box-shadow: 0 0 0 3px rgba(27, 77, 55, 0.14);
+  }
+
+  .ipcf-input[aria-invalid="true"],
+  .ipcf-input:user-invalid {
+    border-color: var(--ipcf-danger);
+    background-color: #fffbfa;
+  }
+
+  .ipcf-input[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.14);
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Container queries e rolagem acessível para tabela de membros */
+.table-scroll-region {
+  container-type: inline-size;
+  overflow-x: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--ipcf-border);
+  background: var(--ipcf-surface);
+}
+
+.table-scroll-region:focus-visible {
+  outline: 2px solid var(--ipcf-brand);
+  outline-offset: 2px;
+}
+
+dialog.ipcf-dialog {
+  width: min(calc(100vw - 2rem), 28rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+dialog.ipcf-dialog::backdrop {
+  background: rgba(18, 57, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

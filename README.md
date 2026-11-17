@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Censo IPCF
 
-## Getting Started
+Sistema oficial de recenseamento, gestão familiar e acompanhamento pastoral da **Igreja Presbiteriana em Casa Forte (Recife - PE)**.
 
-First, run the development server:
+## Stack Principal
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js (App Router) + React 19 + TypeScript**
+- **Tailwind CSS v4** (Design System IPCF com tokens verde profundo `#12392a`, institucional `#1b4d37`, dourado `#cf9841` e papel cremoso `#faf8f3`)
+- **Supabase (PostgreSQL + Auth + Row Level Security + Triggers)**
+- **Zod** (Validação estrita incluindo Módulo 11 de CPF)
+- **Leaflet** (Mapa interativo com camada Google Maps sem chave de API)
+
+---
+
+## Como Configurar e Rodar Localmente
+
+### 1. Banco de Dados no Supabase
+
+1. Crie um projeto gratuito no [Supabase](https://supabase.com).
+2. No menu **SQL Editor**, cole e execute todo o conteúdo de:
+   - `supabase/migrations/001_initial_schema.sql`
+3. Em **Authentication → Providers → Email**, mantenha o provedor de Email ativo (usado internamente via Shadow Email `<cpf>@membros.ipcf.local`; os novos usuários são confirmados via `service_role` pelo servidor).
+
+### 2. Variáveis de Ambiente
+
+Copie `.env.example` para `.env.local` na raiz do projeto e preencha:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-anon-key
+SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+ADMIN_MASTER_CPFS=00000000000
+CRON_SECRET=uma-chave-aleatoria-segura
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> **Dica de Bootstrap (`ADMIN_MASTER_CPFS`):** Informe os 11 dígitos do(s) CPF(s) do Pastor / Secretaria (separados por vírgula). Na primeira vez que essa pessoa responder ao `/censo`, a conta já nasce com perfil `admin` no Painel Pastoral (`/admin`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Desenvolvimento Local
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Acesse `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Rotas Principais
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `/` — Portal de entrada (*Fazer Meu Censo* ou *Já tenho cadastro*)
+- `/censo` — Formulário wizard em 4 etapas com ViaCEP, auto-save de rascunho local e pré-preenchimento automático entre cônjuges
+- `/login` — Acesso simplificado via CPF + senha
+- `/minha-ficha` — Portal de autoatendimento do membro, edição civil, gestão de filhos e geração de link mágico (`/convite/[token]`) via WhatsApp
+- `/convite/[token]` — Emancipação de dependente jovem/adulto preservando genealogia e residência
+- `/admin` — Painel Pastoral (KPIs, Aniversariantes e Bodas da Semana, Mapa geográfico, Disponibilidade por dia, Filtros e Exportação CSV/Excel)
+- `/admin/membro/[id]` — Visão detalhada somente-leitura dos dados civis + Controles eclesiásticos + Reset de senha em 1 clique + Rota GPS
+- `/api/cron/keep-alive` — Endpoint agendado em `vercel.json` (a cada 48h) para evitar pausa por inatividade no plano gratuito do Supabase
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy na Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Conecte o repositório na **Vercel**.
+2. Cadastre todas as variáveis do `.env.local` nas **Environment Variables** da Vercel.
+3. O arquivo `vercel.json` ativará automaticamente o Vercel Cron em `/api/cron/keep-alive`.
+4. Os cabeçalhos `X-Robots-Tag: noindex, nofollow, noarchive` e `robots` metadata impedem que buscadores públicos indexem o portal.
